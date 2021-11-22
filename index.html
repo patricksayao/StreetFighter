@@ -1,0 +1,415 @@
+
+<!-- added a jump button, took me hours to figure out, then it turned out to be simple -->
+<!-- added a kneel button -->
+<!-- added hadouken frame -->
+<!-- added beam with a range -->
+<!-- added beam collision -->
+<!-- added damage to beam collision -->
+<!-- added pop after beam collision -->
+<!-- added sounds -->
+<!-- added hit animation for character2 -->
+<!-- 10 hrs is up -->
+
+<style>
+body{
+	background-color:black;
+}
+#background{
+	width: 800px;
+	height:260px;
+	background: url('background_blanka.gif');
+	background-size: cover;
+}
+#instructions{
+    background-color: #fff;
+}
+#character1{
+	background: url('ken.png') 0px -80px;
+	width:70px;
+	height:80px;
+	position:absolute;
+}
+#character2{
+	background: url('ken.png') 0px -80px;
+	width:70px;
+	height:80px;
+	position:absolute;
+	transform: scaleX(-1);
+}
+#healthbar1{
+	width:200px;
+	height:15px;
+	background-color:lightgreen;
+	border:3px solid green;
+	position:absolute;
+	top:30px;
+	left:25px;
+}
+#healthbar2{
+	width:200px;
+	height:15px;
+	background-color:pink;
+	border:3px solid red;
+	position:absolute;
+	top:30px;
+	left:325px;
+}
+.haddouken{
+    background: url('ken.png') 0px -323px;
+    width:70px;
+	height:80px;
+	position:absolute;
+}
+</style>
+
+<div id='background'>
+	<div id='character1'></div>
+	<div id='character2'></div>
+
+	<div id='healthbar1'></div>
+	<div id='healthbar2'></div>
+
+    <div id='haddoukennnnn'></div>
+</div>
+<div id="instructions">
+    <h2>Instructions</h2>
+    <ul>
+        <li>W-A-S-D (up, left, down, right)</li>
+        <li>K - Punch</li>
+        <li>J - Kick</li>
+        <li>I - Hadoken</li>
+        <li>L - Round House</li>
+    </ul>
+</div>
+
+
+
+<script>
+
+	var action = 'STANDING';
+	var which_frame = 0;
+
+	var character1={
+		top: 185,
+		left: 100,
+		health: 100
+	}
+	var character2={
+		top: 185,
+		left: 400,
+		health: 100
+	}
+
+    let beam = [];
+
+    function punchAudio(){
+        let audio = new Audio('punch.mp3');
+		audio.play();
+    }
+
+    function kickAudio(){
+        let audio = new Audio('swish2.mp3');
+		audio.play();
+    }
+
+    function jumpAudio(){
+        let audio = new Audio('swish3.mp3');
+		audio.play();
+    }
+
+    function hitAudio(){
+        let audio = new Audio('hit1.wav');
+		audio.play();
+    }
+
+    function haddouAudio(){
+        new Audio('hado.wav').play();
+    }
+
+    function kenAudio(){
+        new Audio('ken.wav').play();
+    }
+
+	function GameLoop()
+	{
+		displayCharacters();
+        displayBeam();
+        moveBeam();
+        detectCollision();
+	}
+
+	setInterval(GameLoop, 150);
+
+
+	function displayCharacters()
+	{
+		document.getElementById('character1').style.top = character1.top;
+		document.getElementById('character1').style.left = character1.left;
+
+		document.getElementById('character2').style.top = character2.top;
+		document.getElementById('character2').style.left = character2.left;
+
+		document.getElementById('healthbar1').style.width = character1.health*2.3;
+		document.getElementById('healthbar2').style.width	 = character2.health*2.3;
+
+
+		if(action == 'STANDING')
+		{
+			document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -80px";
+            document.getElementById('character2').style.background = "url('ken.png') -"+which_frame*70+"px -80px";
+			which_frame = which_frame+1;
+
+			if(which_frame >= 4)
+			{
+				which_frame = 0;
+			}
+		}
+        else if(action == 'RIGHT')
+		{
+			document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -241px";
+            // document.getElementById('character2').style.background = "url('ken.png') -"+which_frame*70+"px -241px";
+			which_frame = which_frame+1;
+
+			if(which_frame >= 5)
+			{
+				which_frame = 0;
+                action = 'STANDING';
+			}
+		}
+        else if(action == 'LEFT')
+		{
+            document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -241px";
+            // document.getElementById('character2').style.background = "url('ken.png') -"+which_frame*70+"px -241px";
+			which_frame = which_frame+1;
+
+			if(which_frame >= 5)
+			{
+				which_frame = 0;
+                action = 'STANDING';
+			}
+		}
+        else if(action == 'KNEEL')
+		{
+            document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -722px";
+            // document.getElementById('character2').style.background = "url('ken.png') -"+which_frame*70+"px -241px";
+            setTimeout(function(){
+                which_frame = 1;
+            },10);
+
+			if(which_frame >= 1)
+			{
+				which_frame = 0;
+                action = 'STANDING';
+			}
+		}
+        else if(action == 'JUMP')
+		{
+            // console.log("hello");
+            if(which_frame == 2){
+                jumpAudio();
+                character1.top -= 20;
+			}
+            if(which_frame == 3){
+                character1.top -= 20
+            }
+            if(which_frame == 4){
+                character1.top -= 20
+            }
+            if(which_frame == 5){
+                character1.top += 20
+            }
+            if(which_frame == 6){
+                character1.top += 20
+            }
+            if(which_frame == 7){
+                character1.top += 20
+            }
+            document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -642px";
+            // which_frame++;
+            setTimeout(function(){
+                which_frame++;
+            },200);
+
+            if(which_frame > 7){
+                which_frame = 0
+                action = 'STANDING';
+            }
+
+		}
+		else if(action == 'PUNCH')
+		{
+            if (which_frame == 1){
+                punchAudio();
+            }
+			if(which_frame == 2 && character1.left > character2.left - 150 && character1.left < character2.left + 50)
+			{
+                hitAudio();
+				character2.health = character2.health-5;
+                document.getElementById('character2').style.background = "url('ken.png') -282px -560px";
+			}
+			document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -160px";
+			which_frame = which_frame+1;
+
+			if(which_frame >= 3)
+			{
+				which_frame = 0;
+				action = 'STANDING';
+			}
+		}
+        else if(action == 'KICK')
+		{
+            if (which_frame == 1){
+                kickAudio();
+            }
+			if(which_frame == 2 && character1.left > character2.left - 150 && character1.left < character2.left + 50)
+			{
+
+                hitAudio();
+				character2.health = character2.health-5;
+                document.getElementById('character2').style.background = "url('ken.png') -282px -560px";
+			}
+			document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -480px";
+			which_frame = which_frame+1;
+
+			if(which_frame >= 5)
+			{
+				which_frame = 0;
+				action = 'STANDING';
+			}
+		}
+		else if(action == 'ROUND_KICK')
+		{
+            if (which_frame == 1){
+                kickAudio();
+            }
+
+			if(which_frame == 2 && character1.left > character2.left - 150 && character1.left < character2.left + 50)
+			{
+                hitAudio();
+                document.getElementById('character2').style.background = "url('ken.png') -282px -560px";
+				character2.health = character2.health-8;
+			}
+
+			document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px -560px";
+			which_frame = which_frame+1;
+
+			if(which_frame >= 5)
+			{
+				which_frame = 0;
+				action = 'STANDING';
+			}
+		}
+        else if(action == 'HADDOUKEN')
+		{
+            if (which_frame == 1){
+                haddouAudio();
+            }
+
+            if(which_frame == 3){
+
+                setTimeout(function(){
+                    displayBeam();
+                    moveBeam();
+                },10000000);
+            }
+
+			document.getElementById('character1').style.background = "url('ken.png') -"+which_frame*70+"px 0px";
+			which_frame = which_frame+1;
+
+			if(which_frame >= 4)
+			{
+                kenAudio();
+				which_frame = 0;
+				action = 'STANDING';
+			}
+		}
+	}
+
+    function displayBeam(){
+
+        let output = '';
+		for (let i = 0; i < beam.length; i++){
+			output += "<div class='haddouken' style='top:"+beam[i].top+"px; left:"+beam[i].left+"px;'></div>"
+		}
+		document.getElementById('haddoukennnnn').innerHTML = output;
+    }
+
+    function moveBeam(){
+        let counter = 0;
+        for (let i = 0; i < beam.length; i++){
+			beam[i].left += 10;
+            counter++;
+			if (beam[i].left > 500 || counter > 6){
+				// beam.shift(); // I wanna use so bad
+				beam[i] = beam[beam.length - 1];
+				beam.pop();
+			}
+		}
+    }
+
+    function detectCollision(){
+
+        for (let i = 0; i < beam.length; i++){
+            if (Math.abs(character2.left - beam[i].left) < 10 && Math.abs(character2.top - beam[i].top) < 10){
+                // which_frame = 5
+                // console.log("ouch to me");
+                hitAudio();
+                character2.health = character2.health-20;
+                document.getElementById('character2').style.background = "url('ken.png') -282px -560px";
+    			// which_frame = which_frame-1;
+
+                // if(which_frame <= 4)
+    			// {
+    			// 	which_frame = 0;
+    			// 	action = 'STANDING';
+    			// }
+                beam[i] = beam[beam.length - 1];
+				beam.pop();
+
+            }
+        }
+    }
+
+	document.onkeydown = function(e)
+	{
+		console.log(e);
+		if(e.keyCode == 65 && character1.left > 0)
+		{
+			character1.left = character1.left-10;
+            action = 'LEFT';
+		}
+		else if(e.keyCode == 68 && character1.left < 800)
+		{
+			character1.left = character1.left+10;
+            action = 'RIGHT';
+		}
+        else if(e.keyCode == 87 )  // w
+		{
+            action = 'JUMP';
+		}
+        else if(e.keyCode == 83 )  // s
+		{
+            action = 'KNEEL';
+		}
+		else if(e.keyCode == 75) // k
+		{
+			action = 'PUNCH';
+		}
+		else if(e.keyCode == 76) // l
+		{
+			action = 'ROUND_KICK';
+		}
+        else if(e.keyCode == 74) // l
+		{
+			action = 'KICK';
+		}
+        else if(e.keyCode == 73) // i
+		{
+			action = 'HADDOUKEN';
+            beam.push({top: character1.top + 0, left: character1.left + 50});
+		}
+
+		which_frame = 0;
+	}
+	displayCharacters();
+</script>
